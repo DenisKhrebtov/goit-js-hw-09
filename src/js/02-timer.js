@@ -18,9 +18,46 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    console.log(selectedDates[0]);
+    selectedTime = selectedDates[0];
+    if (selectedTime < new Date()) {
+      Notiflix.Notify.warning('Please choose a date in the future');
+    } else {
+      startTimerRef.removeAttribute('disabled');
+      Notiflix.Notify.success('Let`s start timer');
+    }
   },
 };
+
+flatpickr('input#datetime-picker', options);
+
+startTimerRef.addEventListener('click', onStartTimer);
+
+function onStartTimer() {
+  startTimerRef.setAttribute('disabled', true);
+  inputRef.setAttribute('disabled', true);
+
+  const intervalID = setInterval(() => {
+    const currentTime = new Date();
+    let deltaTime = selectedTime - currentTime;
+
+    if (deltaTime >= 0) {
+      const { days, hours, minutes, seconds } = convertMs(deltaTime);
+      daysSpanRef.textContent = addLeadingZero(days);
+      hoursSpanRef.textContent = addLeadingZero(hours);
+      minutesSpanRef.textContent = addLeadingZero(minutes);
+      secondsSpanRef.textContent = addLeadingZero(seconds);
+      console.log(days, hours, minutes, seconds);
+    } else {
+      clearInterval(intervalID);
+      startTimerRef.removeAttribute('disabled', true);
+      inputRef.removeAttribute('disabled', true);
+    }
+  }, 1000);
+}
+
+function addLeadingZero(value) {
+  return value.toString().padStart(2, '0');
+}
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
